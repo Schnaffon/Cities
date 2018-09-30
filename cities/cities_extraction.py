@@ -169,20 +169,22 @@ def send_to_algolia_index(cities_dictionary, ALGOLIA_API_KEY):
     As some cities where too big to be indexed, I decided to send them one by one to identify the ones that could not
     be inserted in the index and give them a second chance, hand made."""
 
-    algolia_client = algoliasearch.Client(ALGOLIA_APP_ID, ALGOLIA_API_KEY)
+    pass
 
-    index = algolia_client.init_index('Cities3')
-
-    for element in cities_dictionary.values():
-        # I put the geoname_id as objectID. Not sur of this choice...
-        geoname_id = element.pop('geoname_id')
-        element["objectID"] = geoname_id
-        element["alternate names"] = list(element["alternate names"])
-        try:
-            index.add_object(element)
-        except helpers.AlgoliaException:
-            print("Too big of an entry : {}".format(element))
-            continue
+    # algolia_client = algoliasearch.Client(ALGOLIA_APP_ID, ALGOLIA_API_KEY)
+    #
+    # index = algolia_client.init_index('Cities3')
+    #
+    # for element in cities_dictionary.values():
+    #     # I put the geoname_id as objectID. Not sur of this choice...
+    #     geoname_id = element.pop('geoname_id')
+    #     element["objectID"] = geoname_id
+    #     element["alternate names"] = list(element["alternate names"])
+    #     try:
+    #         index.add_object(element)
+    #     except helpers.AlgoliaException:
+    #         print("Too big of an entry : {}".format(element))
+    #         continue
 
 
 def build_postal_codes_list(countries, postal_codes_file):
