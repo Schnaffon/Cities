@@ -6,18 +6,17 @@ from algoliasearch import algoliasearch, helpers
 from .utils import hasNumbers, location_identification, fusion, city_identification
 
 # For obvious reasons,  the config file won't be pushed
-from .config import ALTERNATE_NAMES_FILE, POPULATION_DIR, POSTAL_CODES_FILE, ALGOLIA_API_KEY, ALGOLIA_APP_ID, \
-    COUNTRIES_FILE
+from .config import ALGOLIA_APP_ID
 
 
 # Brief note. Only dictionaries are used here. That makes this impossible to apply on large datasets (for RAM is finite)
 # I first did this using pymongo instead of dicitonaries. It was really slow so, I settled for dictionaries instead.
 # But everything here can be done using database.
 
-def build_alternate_names_dict():
+def build_alternate_names_dict(alternate_names_file):
     """This should build the first dictionary. It shall contain a series of names associated to a geoname_id key"""
     alternate_names_dict = {}
-    with open(ALTERNATE_NAMES_FILE) as alternate_names_file:
+    with open(alternate_names_file) as alternate_names_file:
         for i, line in enumerate(alternate_names_file.readlines()):
 
             # Let's parse each line
@@ -40,7 +39,7 @@ def build_alternate_names_dict():
     return alternate_names_dict
 
 
-def add_population(alternate_name_dict, countries):
+def add_population(alternate_name_dict, countries, population_dir):
     """Once the alternate names dictioary is built, let's iterate on the files containing population information
     The jointure is made on geoname_id that should be unique
     This dictionary has a couple (country, city_name) for key
@@ -48,12 +47,12 @@ def add_population(alternate_name_dict, countries):
 
     with_population = {}
     # I used tqdm here but really it isn't necessary as I only had like 4 files. But anyway...
-    for file in tqdm(os.listdir(POPULATION_DIR)):
-        with open("/home/verene/cities2/population/" + file, 'r') as fichier:
-            for line in fichier:
+    for file in tqdm(os.listdir(population_dir)):
+        with open(population_dir + file, 'r') as population_file:
+            for line in population_file:
 
                 # Building the City Object
-                city = {}
+
                 splitline = line.split("\t")
 
                 # Some cities are not parsable and lack some fields. I just dropped them...
@@ -147,8 +146,6 @@ def clean_data(cities_dictionary):
     for city in cities_dictionary.values():
         new_alternate = []
         for alternate in city["alternate names"]:
-            if alternate == "Antony":
-                print(city)
             if not hasNumbers(alternate):
                 new_alternate.append(alternate)
         if not hasNumbers(city["name2"]):
@@ -165,7 +162,7 @@ def clean_data(cities_dictionary):
     print("Total : {}".format(len(cities_dictionary)))
 
 
-def send_to_algolia_index(cities_dictionary):
+def send_to_algolia_index(cities_dictionary, ALGOLIA_API_KEY):
     """This function has a self explatory title
     As for sending, it could have been done in batches to go faster, but the dataset here was
     small enough to allow me to do as I wished.
@@ -188,7 +185,7 @@ def send_to_algolia_index(cities_dictionary):
             continue
 
 
-def build_postal_codes_list(countries):
+def build_postal_codes_list(countries, postal_codes_file):
     """ This builds a dictionary ith the postal codes dataset.
     I first used pymongo to index everything (because I didn't want to this every time. And wanted to be able to search through the data.
     That's why this function is not as clean as the others.
@@ -196,7 +193,7 @@ def build_postal_codes_list(countries):
     """
 
     postal_codes_list = []
-    with open(POSTAL_CODES_FILE) as postal_codes_file:
+    with open(postal_codes_file) as postal_codes_file:
         next_line = [""]
         while True:
             if next_line == [""]:
@@ -251,10 +248,10 @@ def build_postal_codes_list(countries):
             postal_codes_list.append(city)
 
 
-def build_countries_dictionary():
+def build_countries_dictionary(countries_file):
     countries = {}
 
-    with open(COUNTRIES_FILE) as countries_file:
+    with open(countries_file) as countries_file:
         for line in countries_file:
             try:
                 splitline = line.split("\t")
@@ -265,5 +262,5 @@ def build_countries_dictionary():
                 }
                 countries[country["ISO"]] = country["name"]
             except:
-                print("Line {} from file {} could not be parsed".format(line, "/home/verene/cities/countryInfo.txt"))
+                print("Line {} could not be parsed".format(line))
     return countries
