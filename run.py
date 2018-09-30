@@ -22,4 +22,4 @@ if __name__ == "__main__":
     cities_dictionary = clean_data(add_postal_codes(add_population(alternate_names, countries, POPULATION_DIR), postal_codes))
 
     if args.algolia_index:
-        # send_to_algolia_index(cities_dictionary, args.algolia_index)
+        send_to_algolia_index(cities_dictionary, args.algolia_index)
