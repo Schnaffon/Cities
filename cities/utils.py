@@ -1,14 +1,7 @@
-from pymongo import MongoClient
-from algoliasearch import algoliasearch, helpers
-
 def location_identification( loc1: tuple, loc2: tuple):
     """Checks if two cities are close enough to assume they're one"""
 
     return abs(loc1[0] - loc2[0]) + abs(loc1[1] - loc2[1]) < 0.5
-
-def send_batch(batch: list):
-    client = MongoClient()
-    client["cities"]["definitive_cities"].insert_many(batch)
 
 
 def city_identification(city1, city2):
@@ -29,3 +22,4 @@ def fusion(staying_city, additional_city):
         staying_city["population"] = additional_city["population"]
         staying_city["geoname_id"] = additional_city["geoname_id"]
     staying_city["alternate names"].update(additional_city["alternate names"])
+

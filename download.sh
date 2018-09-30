@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+mkdir -p data
+mkdir -p data/population
+
 # Countries
 wget -q http://download.geonames.org/export/zip/countryInfo.txt -O ./data/countryInfo.txt
 
